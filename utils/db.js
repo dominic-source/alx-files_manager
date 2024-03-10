@@ -29,7 +29,7 @@ class DBClient {
       return users;
     } catch (err) {
       // console.log('An Error was encountered!');
-      return err;
+      return null;
     }
   }
 
@@ -39,7 +39,7 @@ class DBClient {
       return files;
     } catch (err) {
       // console.log('An Error was encountered in getting the number of files!');
-      return err;
+      return null;
     }
   }
 }

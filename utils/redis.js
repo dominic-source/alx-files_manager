@@ -1,14 +1,15 @@
-import redis from 'redis';
+import { createClient } from 'redis';
 import { promisify } from 'util';
 
 class RedisClient {
   constructor() {
     this.state = false;
-    this.client = redis.createClient()
+    this.client = createClient()
       .on('error', (errmessage) => {
         console.log(errmessage);
       })
       .on('ready', () => {
+        console.log('redis server is connected!');
         this.state = true;
       });
   }
