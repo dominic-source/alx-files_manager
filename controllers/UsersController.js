@@ -2,7 +2,6 @@ import sha1 from 'sha1';
 import dbClient from '../utils/db';
 
 async function postNew(req, res) {
-	console.log(req, req.body);
   const { email } = req.body;
   if (!email) {
     res.status(400).json({ error: 'Missing email' });
