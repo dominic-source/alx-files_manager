@@ -8,7 +8,7 @@ class DBClient {
   constructor() {
     // this.url = 'mongodb+srv://filemanagercluster.3uyhuyj.mongodb.net/?authSource=%24external&authMechanism=MONGODB-X509&retryWrites=true&w=majority&appName=fileManagerCluster';
     this.url = `mongodb://${dbHost}:${dbPort}`;
-    this.client = new MongoClient(this.url);
+    this.client = new MongoClient(this.url, { useNewUrlParser: true, useUnifiedTopology: true });
     this.client.connect().then(() => {
       // console.log('Connection established');
       this.db = this.client.db(dbDatabase);

@@ -12,19 +12,15 @@ async function postNew(req, res) {
   }
   const collection = dbClient.db.collection('users');
   const hashPassword = sha1(password);
-  const result = await collection.insertOne({ email, password: hashPassword });
-  collection.findOne({ email })
-    .then((user) => {
-      if (user) {
-        return res.status(400).json({ error: 'Already exist' });
-      }
-      return res.status(201).json({ email, id: result.insertedId });
-    })
-    .catch((err) => {
-      console.log(err);
-      return res.status(500).json({ error: 'Internal server error' });
-    });
-  return res.status(201).json({ email, id: result.insertedId });
+  let data;
+  try {
+    data = await collection.findOne({ email });
+    if (data) return res.status(400).json({ error: 'Already exist' });
+    const result = await collection.insertOne({ email, password: hashPassword });
+    return res.status(201).json({ email, id: result.insertedId });
+  } catch (error){
+    return res.status(500).json({ error });
+  }
 }
 
 module.exports = { postNew };
