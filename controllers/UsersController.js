@@ -18,7 +18,7 @@ async function postNew(req, res) {
     if (data) return res.status(400).json({ error: 'Already exist' });
     const result = await collection.insertOne({ email, password: hashPassword });
     return res.status(201).json({ email, id: result.insertedId });
-  } catch (error){
+  } catch (error) {
     return res.status(500).json({ error });
   }
 }
