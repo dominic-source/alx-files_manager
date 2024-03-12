@@ -5,7 +5,9 @@ import redisClient from '../utils/redis';
 
 class AuthController {
   static async getConnect(req, res) {
-    const authorization = req.get('Authorization').split(' ')[1];
+    let authorization = req.get('Authorization');
+    if (!authorization) return res.status(401).json({ error: 'Unauthorized' });
+    authorization = authorization.split(' ')[1];
     const [email, password] = Buffer.from(authorization, 'base64').toString('utf-8').split(':');
     const hashPassword = sha1(password);
     const collection = await dbClient.db.collection('users');
