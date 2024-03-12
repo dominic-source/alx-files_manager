@@ -12,7 +12,7 @@ class FilesController {
   static async postUpload(req, res) {
     const token = req.get('X-Token');
     if (!token) res.status(401).json({ error: 'Unauthorized' });
-    let obj;
+    let obj = {};
     try {
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
@@ -44,7 +44,7 @@ class FilesController {
       }
       fs.mkdirSync(FOLDER_PATH, { recursive: true });
       const binaryData = Buffer.from(data, 'base64');
-      const localPath = path.join(FOLDER_PATH, uuidv4);
+      const localPath = path.join(FOLDER_PATH, uuidv4());
       fs.writeFileSync(localPath, binaryData);
       obj.localPath = localPath;
       const result = await fileCollection.insertOne(obj);
@@ -56,7 +56,7 @@ class FilesController {
   }
 
   static async getShow(req, res) {
-    let fileResult;
+    let fileResult = {};
     try {
       const _id = req.params.id;
       const token = req.get('X-Token');
@@ -76,7 +76,7 @@ class FilesController {
   }
 
   static async getIndex(req, res) {
-    let resultFileCollection;
+    let resultFileCollection = [];
     try {
       const token = req.get('X-Token');
       if (!token) res.status(401).json({ error: 'Unauthorized' });
@@ -101,7 +101,7 @@ class FilesController {
   }
 
   static async putPublish(req, res) {
-    let update;
+    let update = {};
     try {
       const _id = req.params.id;
       const token = req.get('X-Token');
@@ -126,7 +126,7 @@ class FilesController {
   }
 
   static async putUnpublish(req, res) {
-    let update;
+    let update = {};
     try {
       const _id = req.params.id;
       const token = req.get('X-Token');
