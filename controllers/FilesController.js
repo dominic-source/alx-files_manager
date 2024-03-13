@@ -21,7 +21,10 @@ class FilesController {
       if (!resultUser) return res.status(401).json({ error: 'Unauthorized' });
       // Get data
       const {
-        name, type, parentId = 0, isPublic = false, data,
+        name, type, isPublic = false, data,
+      } = req.body;
+      let {
+        parentId = 0,
       } = req.body;
       const listType = ['folder', 'file', 'image'];
       if (!name) return res.status(400).json({ error: 'Missing name' });
@@ -30,14 +33,15 @@ class FilesController {
       if (!data && type !== 'folder') return res.status(400).json({ error: 'Missing data' });
       const fileCollection = dbClient.db.collection('files');
       if (parentId !== 0) {
+        parentId = new ObjectId(parentId);
         const result = await fileCollection.findOne(
-          { _id: new ObjectId(parentId), userId: new ObjectId(userId) },
+          { _id: parentId, userId: new ObjectId(userId) },
         );
         if (!result) return res.status(400).json({ error: 'Parent not found' });
         if (result.type !== 'folder') return res.status(400).json({ error: 'Parent is not a folder' });
       }
       obj = {
-        userId: new ObjectId(userId), name, type, isPublic, parentId: new ObjectId(parentId),
+        userId: new ObjectId(userId), name, type, isPublic, parentId,
       };
       if (type === 'folder') {
         // Add the folder to database
