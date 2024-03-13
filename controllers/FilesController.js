@@ -152,22 +152,22 @@ class FilesController {
       const result = await collection.findOne({ _id: new ObjectId(userId) });
       if (!result) return res.status(401).json({ error: 'Unauthorized' });
       const fileCollection = dbClient.db.collection('files');
-      const obj = [
+      update = await fileCollection.findOneAndUpdate(
         { _id: new ObjectId(_id), userId: new ObjectId(userId) },
         { $set: { isPublic: true } },
         { returnOriginal: false },
-      ];
-      update = await fileCollection.findOneAndUpdate(...obj);
-      if (!update) return res.status(404).json({ error: 'Not found' });
+      );
+      if (!update || !update.value) return res.status(404).json({ error: 'Not found' });
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    update.id = update._id.toString();
-    update.userId = update.userId.toString();
-    update.parentId = update.parentId.toString();
-    delete update._id;
-    if ('localPath' in update) delete update.localPath;
-    return res.status(200).json(update);
+    let newUpdate = update.value;
+    newUpdate.id = newUpdate._id.toString();
+    newUpdate.userId = newUpdate.userId.toString();
+    newUpdate.parentId = newUpdate.parentId.toString();
+    delete newUpdate._id;
+    if ('localPath' in newUpdate) delete newUpdate.localPath;
+    return res.status(200).json(newUpdate);
   }
 
   static async putUnpublish(req, res) {
@@ -183,22 +183,22 @@ class FilesController {
       const result = await collection.findOne({ _id: new ObjectId(userId) });
       if (!result) return res.status(401).json({ error: 'Unauthorized' });
       const fileCollection = dbClient.db.collection('files');
-      const obj = [
+      update = await fileCollection.findOneAndUpdate(
         { _id: new ObjectId(_id), userId: new ObjectId(userId) },
         { $set: { isPublic: false } },
         { returnOriginal: false },
-      ];
-      update = await fileCollection.findOneAndUpdate(...obj);
-      if (!update) return res.status(404).json({ error: 'Not found' });
+      );
+      if (!update || !update.value) return res.status(404).json({ error: 'Not found' });
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    update.id = update._id.toString();
-    update.userId = update.userId.toString();
-    update.parentId = update.parentId.toString();
-    delete update._id;
-    if ('localPath' in update) delete update.localPath;
-    return res.status(200).json(update);
+    let newUpdate = update.value;
+    newUpdate.id = newUpdate._id.toString();
+    newUpdate.userId = newUpdate.userId.toString();
+    newUpdate.parentId = newUpdate.parentId.toString();
+    delete newUpdate._id;
+    if ('localPath' in newUpdate) delete newUpdate.localPath;
+    return res.status(200).json(newUpdate);
   }
 
   static async getFile(req, res) {
