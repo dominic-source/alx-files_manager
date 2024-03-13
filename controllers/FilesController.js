@@ -11,7 +11,7 @@ const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
 class FilesController {
   static async postUpload(req, res) {
     const token = req.get('X-Token');
-    if (!token) res.status(401).json({ error: 'Unauthorized' });
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
     let obj = {};
     try {
       const userId = await redisClient.get(`auth_${token}`);
@@ -40,7 +40,14 @@ class FilesController {
       if (type === 'folder') {
         // Add the folder to database
         const result = await fileCollection.insertOne(obj);
-        if (result) return res.status(201).json(result.ops[0]);
+        if (result) {
+          let ret = result.ops[0];
+          ret.id = ret._id.toString();
+          delete ret._id;
+          if ('localPath' in ret) delete ret.localPath;
+          return res.status(201).json(ret);
+        } 
+        return res.status(401).json({ error: 'Unauthorized' });
       }
       fs.mkdirSync(FOLDER_PATH, { recursive: true });
       const binaryData = Buffer.from(data, 'base64');
@@ -48,7 +55,13 @@ class FilesController {
       fs.writeFileSync(localPath, binaryData);
       obj.localPath = localPath;
       const result = await fileCollection.insertOne(obj);
-      if (result) return res.status(201).json(obj);
+      if (result) {
+        let fileDoc = result.ops[0];
+        if ('localPath' in fileDoc) delete fileDoc.localPath;
+        fileDoc.id = fileDoc._id.toString();
+        delete fileDoc._id;
+        return res.status(201).json(obj);
+      }
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
@@ -59,8 +72,9 @@ class FilesController {
     let fileResult = {};
     try {
       const _id = req.params.id;
+      if (!_id) return res.status(401).json({ error: 'Unauthorized' });
       const token = req.get('X-Token');
-      if (!token) res.status(401).json({ error: 'Unauthorized' });
+      if (!token) return res.status(401).json({ error: 'Unauthorized' });
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const collection = dbClient.db.collection('users');
@@ -70,8 +84,11 @@ class FilesController {
       fileResult = await fileCollection.findOne({ _id: new ObjectId(_id), userId });
       if (!fileResult) return res.status(404).json({ error: 'Not found' });
     } catch (error) {
-      res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
+    fileResult.id = fileResult._id.toString();
+    delete fileResult._id;
+    if ('localPath' in fileResult) delete fileResult.localPath;
     return res.json(fileResult);
   }
 
@@ -79,7 +96,7 @@ class FilesController {
     let resultFileCollection = [];
     try {
       const token = req.get('X-Token');
-      if (!token) res.status(401).json({ error: 'Unauthorized' });
+      if (!token) return res.status(401).json({ error: 'Unauthorized' });
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const collection = dbClient.db.collection('users');
@@ -104,8 +121,9 @@ class FilesController {
     let update = {};
     try {
       const _id = req.params.id;
+      if (!_id) return res.status(401).json({ error: 'Unauthorized' });
       const token = req.get('X-Token');
-      if (!token) res.status(401).json({ error: 'Unauthorized' });
+      if (!token) return res.status(401).json({ error: 'Unauthorized' });
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const collection = dbClient.db.collection('users');
@@ -122,6 +140,9 @@ class FilesController {
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+    update.id = update._id.toString();
+    delete update._id;
+    if ('localPath' in update) delete update.localPath;
     return res.status(200).json(update);
   }
 
@@ -129,8 +150,9 @@ class FilesController {
     let update = {};
     try {
       const _id = req.params.id;
+      if (!_id) return res.status(401).json({ error: 'Unauthorized' });
       const token = req.get('X-Token');
-      if (!token) res.status(401).json({ error: 'Unauthorized' });
+      if (!token) return res.status(401).json({ error: 'Unauthorized' });
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const collection = dbClient.db.collection('users');
@@ -147,12 +169,16 @@ class FilesController {
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
+    update.id = update._id.toString();
+    delete update._id;
+    if ('localPath' in update) delete update.localPath;
     return res.status(200).json(update);
   }
 
   static async getFile(req, res) {
     try {
       const _id = req.params.id;
+      if (!_id) return res.status(401).json({ error: 'Unauthorized' });
       const collection = dbClient.db.collection('files');
       const result = await collection.findOne({ _id: new ObjectId(_id) });
       if (!result) return res.status(404).json({ error: 'Not found' });
