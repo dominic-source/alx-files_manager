@@ -65,7 +65,7 @@ class FilesController {
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    return res.status(201).json(fileDoc);
+    return res.status(201).json(obj);
   }
 
   static async getShow(req, res) {
