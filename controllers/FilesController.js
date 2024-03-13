@@ -1,4 +1,4 @@
-import { ObjectID } from 'mongodb';
+import { ObjectId } from 'mongodb';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
@@ -17,7 +17,7 @@ class FilesController {
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const collection = dbClient.db.collection('users');
-      const resultUser = await collection.findOne({ _id: new ObjectID(userId) });
+      const resultUser = await collection.findOne({ _id: new ObjectId(userId) });
       if (!resultUser) return res.status(401).json({ error: 'Unauthorized' });
       // Get data
       const {
@@ -64,10 +64,10 @@ class FilesController {
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const collection = dbClient.db.collection('users');
-      const result = await collection.findOne({ _id: new ObjectID(userId) });
+      const result = await collection.findOne({ _id: new ObjectId(userId) });
       if (!result) return res.status(401).json({ error: 'Unauthorized' });
       const fileCollection = dbClient.db.collection('files');
-      fileResult = await fileCollection.findOne({ _id: new ObjectID(_id), userId });
+      fileResult = await fileCollection.findOne({ _id: new ObjectId(_id), userId });
       if (!fileResult) return res.status(404).json({ error: 'Not found' });
     } catch (error) {
       res.status(500).json({ error });
@@ -83,7 +83,7 @@ class FilesController {
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const collection = dbClient.db.collection('users');
-      const result = await collection.findOne({ _id: new ObjectID(userId) });
+      const result = await collection.findOne({ _id: new ObjectId(userId) });
       if (!result) return res.status(401).json({ error: 'Unauthorized' });
       const fileCollection = dbClient.db.collection('files');
       const { parentId = 0, page = 0 } = req.query;
@@ -109,11 +109,11 @@ class FilesController {
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const collection = dbClient.db.collection('users');
-      const result = await collection.findOne({ _id: new ObjectID(userId) });
+      const result = await collection.findOne({ _id: new ObjectId(userId) });
       if (!result) return res.status(401).json({ error: 'Unauthorized' });
       const fileCollection = dbClient.db.collection('files');
       const obj = [
-        { _id: new ObjectID(_id), userId },
+        { _id: new ObjectId(_id), userId },
         { $set: { isPublic: true } },
         { returnOriginal: false },
       ];
@@ -134,11 +134,11 @@ class FilesController {
       const userId = await redisClient.get(`auth_${token}`);
       if (!userId) return res.status(401).json({ error: 'Unauthorized' });
       const collection = dbClient.db.collection('users');
-      const result = await collection.findOne({ _id: new ObjectID(userId) });
+      const result = await collection.findOne({ _id: new ObjectId(userId) });
       if (!result) return res.status(401).json({ error: 'Unauthorized' });
       const fileCollection = dbClient.db.collection('files');
       const obj = [
-        { _id: new ObjectID(_id), userId },
+        { _id: new ObjectId(_id), userId },
         { $set: { isPublic: false } },
         { returnOriginal: false },
       ];
@@ -154,7 +154,7 @@ class FilesController {
     try {
       const _id = req.params.id;
       const collection = dbClient.db.collection('files');
-      const result = await collection.findOne({ _id: new ObjectID(_id) });
+      const result = await collection.findOne({ _id: new ObjectId(_id) });
       if (!result) return res.status(404).json({ error: 'Not found' });
       const token = req.get('X-Token');
       let userId = await redisClient.get(`auth_${token}`);
