@@ -87,12 +87,15 @@ class FilesController {
       const result = await collection.findOne({ _id: new ObjectId(userId) });
       if (!result) return res.status(401).json({ error: 'Unauthorized' });
       const fileCollection = dbClient.db.collection('files');
-      fileResult = await fileCollection.findOne({ _id: new ObjectId(_id), userId });
+      fileResult = await fileCollection.findOne(
+        { _id: new ObjectId(_id), userId: new ObjectId(userId) },
+      );
       if (!fileResult) return res.status(404).json({ error: 'Not found' });
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     fileResult.id = fileResult._id.toString();
+    fileResult.userId = fileResult.userId.toString();
     delete fileResult._id;
     if ('localPath' in fileResult) delete fileResult.localPath;
     return res.json(fileResult);
@@ -109,16 +112,29 @@ class FilesController {
       const result = await collection.findOne({ _id: new ObjectId(userId) });
       if (!result) return res.status(401).json({ error: 'Unauthorized' });
       const fileCollection = dbClient.db.collection('files');
-      const { parentId = 0, page = 0 } = req.query;
+      const { parentId = '0', page = 0 } = req.query;
       const startIndex = page * 20;
-      resultFileCollection = await fileCollection.aggregate([
-        { $match: { parentId: new ObjectId(parentId) } },
+      const pipeline = [
+        { $match: {} },
         { $skip: startIndex },
         { $limit: 20 },
-      ]).toArray();
-      if (!resultFileCollection) return res.json([]);
+      ];
+
+      if (parentId !== '0') {
+        pipeline[0].$match.parentId = new ObjectId(parentId);
+      }
+      resultFileCollection = await fileCollection.aggregate(pipeline).toArray();
+      if (!resultFileCollection || resultFileCollection.length === 0) return res.json([]);
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
+    }
+    for (let i = 0; i < resultFileCollection.length; i += 1) {
+      const item = resultFileCollection[i];
+      item.id = item._id.toString();
+      delete item._id;
+      item.userId = item.userId.toString();
+      if ('localPath' in item) delete item.localPath;
+      resultFileCollection[i] = item;
     }
     return res.json(resultFileCollection);
   }
