@@ -210,9 +210,9 @@ class FilesController {
       if (!result) return res.status(404).json({ error: 'Not found' });
       const token = req.get('X-Token');
       const userId = await redisClient.get(`auth_${token}`);
-      if (!result.isPublic && !userId) return res.status(404).json({ error: 'Not found' });
+      if (!result.isPublic && result.userId !== userId) return res.status(404).json({ error: 'Not found' });
       if (result.type === 'folder') return res.status(400).json({ error: 'A folder doesn\'t have content' });
-      if (!fs.existsSync(result.localPath)) return res.status(404).json({ error: 'Not found' });
+      if (!result.localPath || !fs.existsSync(result.localPath)) return res.status(404).json({ error: 'Not found' });
       const mType = mime.lookup(result.name);
 
       res.set('Content-Type', mType);
