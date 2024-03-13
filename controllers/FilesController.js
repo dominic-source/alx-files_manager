@@ -161,7 +161,7 @@ class FilesController {
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    let newUpdate = update.value;
+    const newUpdate = update.value;
     newUpdate.id = newUpdate._id.toString();
     newUpdate.userId = newUpdate.userId.toString();
     newUpdate.parentId = newUpdate.parentId.toString();
@@ -192,7 +192,7 @@ class FilesController {
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    let newUpdate = update.value;
+    const newUpdate = update.value;
     newUpdate.id = newUpdate._id.toString();
     newUpdate.userId = newUpdate.userId.toString();
     newUpdate.parentId = newUpdate.parentId.toString();
