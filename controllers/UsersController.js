@@ -22,7 +22,7 @@ class UsersController {
       const result = await collection.insertOne({ email, password: hashPassword });
       return res.status(201).json({ email, id: result.insertedId });
     } catch (error) {
-      return res.status(500).json({ error });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
   }
 
@@ -39,12 +39,12 @@ class UsersController {
       try {
         user = await collection.findOne({ _id: new ObjectId(userId) });
       } catch (error) {
-        return res.status(400).json({ error: 'Unauthorized' });
+        return res.status(401).json({ error: 'Unauthorized' });
       }
       if (user) return res.json({ email: user.email, id: userId });
       return res.status(401).json({ error: 'Unauthorized' });
     } catch (error) {
-      return res.status(500).json({ error });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
   }
 }

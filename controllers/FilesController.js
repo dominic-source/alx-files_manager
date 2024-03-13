@@ -50,7 +50,7 @@ class FilesController {
       const result = await fileCollection.insertOne(obj);
       if (result) return res.status(201).json(obj);
     } catch (error) {
-      return res.json({ error });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
     return res.status(201).json(obj);
   }
@@ -70,7 +70,7 @@ class FilesController {
       fileResult = await fileCollection.findOne({ _id: new ObjectId(_id), userId });
       if (!fileResult) return res.status(404).json({ error: 'Not found' });
     } catch (error) {
-      res.status(500).json({ error });
+      res.status(401).json({ error: 'Unauthorized' });
     }
     return res.json(fileResult);
   }
@@ -95,7 +95,7 @@ class FilesController {
       ]).toArray();
       if (!resultFileCollection) return res.json([]);
     } catch (error) {
-      return res.status(500).json({ error });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
     return res.json(resultFileCollection);
   }
@@ -120,7 +120,7 @@ class FilesController {
       update = await fileCollection.findOneAndUpdate(...obj);
       if (!update) return res.status(404).json({ error: 'Not found' });
     } catch (error) {
-      return res.status(500).json({ error });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
     return res.status(200).json(update);
   }
@@ -145,7 +145,7 @@ class FilesController {
       update = await fileCollection.findOneAndUpdate(...obj);
       if (!update) return res.status(404).json({ error: 'Not found' });
     } catch (error) {
-      return res.status(500).json({ error });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
     return res.status(200).json(update);
   }
@@ -172,7 +172,7 @@ class FilesController {
       res.set('Content-Type', mType);
       return res.sendFile(_id, options);
     } catch (error) {
-      return res.status(500).json({ error });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
   }
 }
