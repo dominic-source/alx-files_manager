@@ -20,7 +20,7 @@ class AuthController {
       redisClient.set(key, coll._id.toString(), 86400);
       return res.status(200).json({ token });
     } catch (error) {
-      return res.status(500).json({ error });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
   }
 
@@ -34,7 +34,7 @@ class AuthController {
       redisClient.del(key);
       return res.status(204).send();
     } catch (error) {
-      return res.status(500).json({ error });
+      return res.status(401).json({ error: 'Unauthorized' });
     }
   }
 }
