@@ -30,7 +30,7 @@ class FilesController {
       if (!data && type !== 'folder') return res.status(400).json({ error: 'Missing data' });
       const fileCollection = dbClient.db.collection('files');
       if (parentId !== 0) {
-        const result = await fileCollection.findOne({ parentId });
+        const result = await fileCollection.findOne({ _id: new ObjectId(parentId), userId });
         if (!result) return res.status(400).json({ error: 'Parent not found' });
         if (result.type !== 'folder') return res.status(400).json({ error: 'Parent is not a folder' });
       }
@@ -41,12 +41,12 @@ class FilesController {
         // Add the folder to database
         const result = await fileCollection.insertOne(obj);
         if (result) {
-          let ret = result.ops[0];
+          const ret = result.ops[0];
           ret.id = ret._id.toString();
           delete ret._id;
           if ('localPath' in ret) delete ret.localPath;
           return res.status(201).json(ret);
-        } 
+        }
         return res.status(401).json({ error: 'Unauthorized' });
       }
       fs.mkdirSync(FOLDER_PATH, { recursive: true });
@@ -56,16 +56,16 @@ class FilesController {
       obj.localPath = localPath;
       const result = await fileCollection.insertOne(obj);
       if (result) {
-        let fileDoc = result.ops[0];
+        const fileDoc = result.ops[0];
         if ('localPath' in fileDoc) delete fileDoc.localPath;
         fileDoc.id = fileDoc._id.toString();
         delete fileDoc._id;
-        return res.status(201).json(obj);
+        return res.status(201).json(fileDoc);
       }
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    return res.status(201).json(obj);
+    return res.status(201).json(filedoc);
   }
 
   static async getShow(req, res) {
