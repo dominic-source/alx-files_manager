@@ -30,12 +30,14 @@ class FilesController {
       if (!data && type !== 'folder') return res.status(400).json({ error: 'Missing data' });
       const fileCollection = dbClient.db.collection('files');
       if (parentId !== 0) {
-        const result = await fileCollection.findOne({ _id: new ObjectId(parentId), userId });
+        const result = await fileCollection.findOne(
+          { _id: new ObjectId(parentId), userId: new ObjectId(userId) },
+        );
         if (!result) return res.status(400).json({ error: 'Parent not found' });
         if (result.type !== 'folder') return res.status(400).json({ error: 'Parent is not a folder' });
       }
       obj = {
-        userId, name, type, isPublic, parentId,
+        userId: new ObjectId(userId), name, type, isPublic, parentId: new ObjectId(parentId),
       };
       if (type === 'folder') {
         // Add the folder to database
@@ -106,7 +108,7 @@ class FilesController {
       const { parentId = 0, page = 0 } = req.query;
       const startIndex = page * 20;
       resultFileCollection = await fileCollection.aggregate([
-        { $match: { parentId } },
+        { $match: { parentId: new ObjectId(parentId) } },
         { $skip: startIndex },
         { $limit: 20 },
       ]).toArray();
@@ -131,7 +133,7 @@ class FilesController {
       if (!result) return res.status(401).json({ error: 'Unauthorized' });
       const fileCollection = dbClient.db.collection('files');
       const obj = [
-        { _id: new ObjectId(_id), userId },
+        { _id: new ObjectId(_id), userId: new ObjectId(userId) },
         { $set: { isPublic: true } },
         { returnOriginal: false },
       ];
@@ -141,6 +143,8 @@ class FilesController {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     update.id = update._id.toString();
+    update.userId = update.userId.toString();
+    update.parentId = update.parentId.toString();
     delete update._id;
     if ('localPath' in update) delete update.localPath;
     return res.status(200).json(update);
@@ -160,7 +164,7 @@ class FilesController {
       if (!result) return res.status(401).json({ error: 'Unauthorized' });
       const fileCollection = dbClient.db.collection('files');
       const obj = [
-        { _id: new ObjectId(_id), userId },
+        { _id: new ObjectId(_id), userId: new ObjectId(userId) },
         { $set: { isPublic: false } },
         { returnOriginal: false },
       ];
@@ -170,6 +174,8 @@ class FilesController {
       return res.status(401).json({ error: 'Unauthorized' });
     }
     update.id = update._id.toString();
+    update.userId = update.userId.toString();
+    update.parentId = update.parentId.toString();
     delete update._id;
     if ('localPath' in update) delete update.localPath;
     return res.status(200).json(update);
