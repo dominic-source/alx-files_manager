@@ -217,12 +217,9 @@ class FilesController {
       if (result.type === 'folder') return res.status(400).json({ error: 'A folder doesn\'t have content' });
       if (!fs.existsSync(path.join(FOLDER_PATH, _id))) return res.status(404).json({ error: 'Not found' });
       const mType = mime.lookup(result.name);
-      const options = {
-        root: FOLDER_PATH,
-      };
 
       res.set('Content-Type', mType);
-      return res.sendFile(_id, options);
+      return res.sendFile(result.localPath);
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
