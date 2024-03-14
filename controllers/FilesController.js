@@ -204,13 +204,14 @@ class FilesController {
   static async getFile(req, res) {
     try {
       const _id = req.params.id;
+      const token = req.get('X-Token');
+      if (!token) return res.status(401).json({ error: 'Unauthorized' });
       if (!_id) return res.status(401).json({ error: 'Unauthorized' });
       const collection = dbClient.db.collection('files');
       const result = await collection.findOne({ _id: new ObjectId(_id) });
       if (!result) return res.status(404).json({ error: 'Not found' });
-      const token = req.get('X-Token');
       const userId = await redisClient.get(`auth_${token}`);
-      if (!result.isPublic && result.userId !== userId) return res.status(404).json({ error: 'Not found' });
+      if (!result.isPublic && !userId || result.userId !== userId) return res.status(404).json({ error: 'Not found' });
       if (result.type === 'folder') return res.status(400).json({ error: 'A folder doesn\'t have content' });
       if (!result.localPath || !fs.existsSync(result.localPath)) return res.status(404).json({ error: 'Not found' });
       const mType = mime.lookup(result.name);
