@@ -205,8 +205,7 @@ class FilesController {
     try {
       const _id = req.params.id;
       const token = req.get('X-Token');
-      if (!token) return res.status(401).json({ error: 'Unauthorized' });
-      if (!_id) return res.status(401).json({ error: 'Unauthorized' });
+      if (!_id) return res.status(404).json({ error: 'Not found' });
       const collection = dbClient.db.collection('files');
       const result = await collection.findOne({ _id: new ObjectId(_id) });
       if (!result) return res.status(404).json({ error: 'Not found' });
