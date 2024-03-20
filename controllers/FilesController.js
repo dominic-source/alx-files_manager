@@ -1,12 +1,19 @@
 import { ObjectId } from 'mongodb';
 import fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
+import Queue from 'bull';
 import path from 'path';
 import mime from 'mime-types';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
 
 const FOLDER_PATH = process.env.FOLDER_PATH || '/tmp/files_manager';
+const fileQueue = new Queue('image_upload', {
+  redis: {
+    host: 'localhost',
+    port: 6379,
+  },
+});
 
 class FilesController {
   static async postUpload(req, res) {
@@ -55,6 +62,7 @@ class FilesController {
         }
         return res.status(401).json({ error: 'Unauthorized' });
       }
+
       fs.mkdirSync(FOLDER_PATH, { recursive: true });
       const binaryData = Buffer.from(data, 'base64');
       const localPath = path.join(FOLDER_PATH, uuidv4());
@@ -66,6 +74,9 @@ class FilesController {
         if ('localPath' in fileDoc) delete fileDoc.localPath;
         fileDoc.id = fileDoc._id.toString();
         delete fileDoc._id;
+        if (type === 'image') {
+          await fileQueue.add({ userId: fileDoc.userId, fileId: fileDoc.id });
+        }
         return res.status(201).json(fileDoc);
       }
     } catch (error) {
@@ -215,12 +226,14 @@ class FilesController {
           return res.status(404).json({ error: 'Not found' });
         }
       }
+      const size = req.query.size;
+      let path = result.localPath;
+      if (size !== undefined && path) path = `${result.localPath}_${size}`;
       if (result.type === 'folder') return res.status(400).json({ error: 'A folder doesn\'t have content' });
-      if (!result.localPath || !fs.existsSync(result.localPath)) return res.status(404).json({ error: 'Not found' });
+      if (!path || !fs.existsSync(path)) return res.status(404).json({ error: 'Not found' });
       const mType = mime.lookup(result.name);
-
       res.set('Content-Type', mType);
-      return res.sendFile(result.localPath);
+      return res.sendFile(path);
     } catch (error) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
